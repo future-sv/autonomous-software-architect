@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
@@ -12,9 +14,12 @@ export default function Home() {
           plan.
         </p>
 
-        <button className="mt-8 rounded-lg bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-500">
-          Create Architecture
-        </button>
+        <Link
+          href="/architect"
+          className="mt-8 rounded-lg bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-500"
+          >
+            Create Architecture
+          </Link>     
       </div>
     </main>
   );
