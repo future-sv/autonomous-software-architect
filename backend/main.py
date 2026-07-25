@@ -2,18 +2,31 @@ import json
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+import models
+from database import engine, get_db
 
 
+# Load environment variables from the frontend .env.local file
 load_dotenv("../.env.local")
 
+
+# Create OpenAI client
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
+
+# Create database tables if they do not already exist
+models.Base.metadata.create_all(bind=engine)
+
+
+# Create FastAPI application
 app = FastAPI()
 
 
@@ -42,7 +55,10 @@ def home():
 
 # Main AI architecture route
 @app.post("/architecture")
-def create_architecture(request: ArchitectureRequest):
+def create_architecture(
+    request: ArchitectureRequest,
+    db: Session = Depends(get_db),
+):
     try:
         response = client.responses.create(
             model="gpt-4.1-mini",
@@ -80,12 +96,37 @@ Return only the JSON object.
 """
         )
 
+        # Convert AI response from JSON text into a Python dictionary
         architecture = json.loads(response.output_text)
 
+        # Create a new database record
+        saved_architecture = models.Architecture(
+            project_description=request.description,
+            project_overview=architecture["project_overview"],
+            frontend=architecture["frontend"],
+            backend=architecture["backend"],
+            database=architecture["database"],
+            api_design=architecture["api_design"],
+            authentication_security=architecture[
+                "authentication_security"
+            ],
+            deployment=architecture["deployment"],
+            implementation_plan=json.dumps(
+                architecture["implementation_plan"]
+            ),
+        )
+
+        # Save architecture to SQLite database
+        db.add(saved_architecture)
+        db.commit()
+        db.refresh(saved_architecture)
+
+        # Send result back to frontend
         return {
             "message": "Architecture generated successfully",
             "description": request.description,
-            "architecture": architecture
+            "architecture": architecture,
+            "id": saved_architecture.id,
         }
 
     except Exception as error:
@@ -94,4 +135,4 @@ Return only the JSON object.
         raise HTTPException(
             status_code=500,
             detail="Failed to generate architecture"
-        ) 
+        )
