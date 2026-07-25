@@ -67,21 +67,9 @@ export default function ArchitectPage() {
               Architecture
             </h2>
 
-            <p className="mt-4">
-              <strong>Frontend:</strong> {result.architecture.frontend}
-            </p>
-
-            <p className="mt-2">
-              <strong>Backend:</strong> {result.architecture.backend}
-            </p>
-
-            <p className="mt-2">
-              <strong>Database:</strong> {result.architecture.database}
-            </p>
-
-            <p className="mt-2">
-              <strong>Deployment:</strong> {result.architecture.deployment}
-            </p>
+            <pre className="mt-4 whitespace-pre-wrap text-gray-300">
+              {result.architecture}
+            </pre>
           </div>
         )}
       </div>
