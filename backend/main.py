@@ -1,3 +1,4 @@
+import json
 import os
 
 from dotenv import load_dotenv
@@ -5,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from pydantic import BaseModel
+
 
 load_dotenv("../.env.local")
 
@@ -51,25 +53,39 @@ Analyze the following software project:
 
 {request.description}
 
-Create a clear software architecture plan.
+Return ONLY valid JSON.
 
-Include:
+Use exactly this structure:
 
-1. Project overview
-2. Frontend recommendation
-3. Backend recommendation
-4. Database recommendation
-5. API structure
-6. Authentication
-7. Deployment
-8. Step-by-step implementation plan
+{{
+  "project_overview": "Brief description of the project and its goals.",
+  "frontend": "Recommended frontend technologies and architecture.",
+  "backend": "Recommended backend technologies and architecture.",
+  "database": "Recommended database and data model approach.",
+  "api_design": "Recommended API structure and communication approach.",
+  "authentication_security": "Authentication and security recommendations.",
+  "deployment": "Recommended deployment and infrastructure approach.",
+  "implementation_plan": [
+    "Step 1",
+    "Step 2",
+    "Step 3",
+    "Step 4",
+    "Step 5"
+  ]
+}}
+
+Do not include markdown.
+Do not include code fences.
+Return only the JSON object.
 """
         )
+
+        architecture = json.loads(response.output_text)
 
         return {
             "message": "Architecture generated successfully",
             "description": request.description,
-            "architecture": response.output_text
+            "architecture": architecture
         }
 
     except Exception as error:
