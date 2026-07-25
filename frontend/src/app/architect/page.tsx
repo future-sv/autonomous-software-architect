@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ArchitectureResults from "../components/ArchitectureResults";
 
 export default function ArchitectPage() {
   const [projectDescription, setProjectDescription] = useState("");
@@ -62,15 +63,7 @@ export default function ArchitectPage() {
         </button>
 
         {result && (
-          <div className="mt-8 rounded-lg border border-gray-700 bg-gray-900 p-6">
-            <h2 className="text-2xl font-bold">
-              Architecture
-            </h2>
-
-            <pre className="mt-4 whitespace-pre-wrap text-gray-300">
-              {result.architecture}
-            </pre>
-          </div>
+          <ArchitectureResults result={result.architecture} />
         )}
       </div>
     </main>
