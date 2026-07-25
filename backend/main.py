@@ -94,4 +94,4 @@ Return only the JSON object.
         raise HTTPException(
             status_code=500,
             detail="Failed to generate architecture"
-        )
+        ) 
