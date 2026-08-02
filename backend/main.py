@@ -12,7 +12,7 @@ import models
 from database import engine, get_db
 
 
-# Load environment variables from the frontend .env.local file
+# Load environment variables
 load_dotenv("../.env.local")
 
 
@@ -22,7 +22,7 @@ client = OpenAI(
 )
 
 
-# Create database tables if they do not already exist
+# Create database tables
 models.Base.metadata.create_all(bind=engine)
 
 
@@ -30,7 +30,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-# Allow Next.js frontend to communicate with the backend
+# Allow Next.js frontend to communicate with backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -40,12 +40,12 @@ app.add_middleware(
 )
 
 
-# Defines what information the frontend sends
+# Defines what the frontend sends when generating an architecture
 class ArchitectureRequest(BaseModel):
     description: str
 
 
-# Simple test route
+# Test route
 @app.get("/")
 def home():
     return {
@@ -53,7 +53,97 @@ def home():
     }
 
 
-# Main AI architecture route
+# Get all saved architectures
+@app.get("/history")
+def get_history(db: Session = Depends(get_db)):
+    architectures = (
+        db.query(models.Architecture)
+        .order_by(models.Architecture.created_at.desc())
+        .all()
+    )
+
+    return [
+        {
+            "id": architecture.id,
+            "project_description": architecture.project_description,
+            "project_overview": architecture.project_overview,
+            "frontend": architecture.frontend,
+            "backend": architecture.backend,
+            "database": architecture.database,
+            "api_design": architecture.api_design,
+            "authentication_security": architecture.authentication_security,
+            "deployment": architecture.deployment,
+            "implementation_plan": json.loads(
+                architecture.implementation_plan
+            ),
+            "created_at": architecture.created_at,
+        }
+        for architecture in architectures
+    ]
+
+
+# Get one saved architecture by ID
+@app.get("/history/{architecture_id}")
+def get_architecture(
+    architecture_id: int,
+    db: Session = Depends(get_db),
+):
+    architecture = (
+        db.query(models.Architecture)
+        .filter(models.Architecture.id == architecture_id)
+        .first()
+    )
+
+    if architecture is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Architecture not found",
+        )
+
+    return {
+        "id": architecture.id,
+        "project_description": architecture.project_description,
+        "project_overview": architecture.project_overview,
+        "frontend": architecture.frontend,
+        "backend": architecture.backend,
+        "database": architecture.database,
+        "api_design": architecture.api_design,
+        "authentication_security": architecture.authentication_security,
+        "deployment": architecture.deployment,
+        "implementation_plan": json.loads(
+            architecture.implementation_plan
+        ),
+        "created_at": architecture.created_at,
+    }
+
+
+# Delete one saved architecture
+@app.delete("/history/{architecture_id}")
+def delete_architecture(
+    architecture_id: int,
+    db: Session = Depends(get_db),
+):
+    architecture = (
+        db.query(models.Architecture)
+        .filter(models.Architecture.id == architecture_id)
+        .first()
+    )
+
+    if architecture is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Architecture not found",
+        )
+
+    db.delete(architecture)
+    db.commit()
+
+    return {
+        "message": "Architecture deleted successfully"
+    }
+
+
+# Generate and save a new AI architecture
 @app.post("/architecture")
 def create_architecture(
     request: ArchitectureRequest,
@@ -96,10 +186,10 @@ Return only the JSON object.
 """
         )
 
-        # Convert AI response from JSON text into a Python dictionary
+        # Convert AI response from JSON text into Python data
         architecture = json.loads(response.output_text)
 
-        # Create a new database record
+        # Create database record
         saved_architecture = models.Architecture(
             project_description=request.description,
             project_overview=architecture["project_overview"],
@@ -116,12 +206,11 @@ Return only the JSON object.
             ),
         )
 
-        # Save architecture to SQLite database
+        # Save architecture
         db.add(saved_architecture)
         db.commit()
         db.refresh(saved_architecture)
 
-        # Send result back to frontend
         return {
             "message": "Architecture generated successfully",
             "description": request.description,
@@ -134,5 +223,5 @@ Return only the JSON object.
 
         raise HTTPException(
             status_code=500,
-            detail="Failed to generate architecture"
+            detail="Failed to generate architecture",
         )
