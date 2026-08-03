@@ -15,6 +15,28 @@ type ArchitectureResultsProps = {
   result: Architecture;
 };
 
+type ResultSectionProps = {
+  title: string;
+  content: string;
+};
+
+function ResultSection({
+  title,
+  content,
+}: ResultSectionProps) {
+  return (
+    <section className="rounded-xl border border-gray-800 bg-gray-900 p-6 transition hover:border-gray-700">
+      <h3 className="text-xl font-semibold text-white">
+        {title}
+      </h3>
+
+      <p className="mt-3 whitespace-pre-line leading-7 text-gray-300">
+        {content}
+      </p>
+    </section>
+  );
+}
+
 export default function ArchitectureResults({
   result,
 }: ArchitectureResultsProps) {
@@ -23,10 +45,21 @@ export default function ArchitectureResults({
   }
 
   return (
-    <div className="mt-10 w-full space-y-6">
-      <h2 className="text-3xl font-bold text-white">
-        Architecture Results
-      </h2>
+    <div className="mt-12 w-full space-y-6">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-wider text-blue-400">
+          Generated System Design
+        </p>
+
+        <h2 className="mt-2 text-3xl font-bold text-white">
+          Architecture Results
+        </h2>
+
+        <p className="mt-2 text-gray-400">
+          Recommended technologies, system components, and implementation steps
+          for your project.
+        </p>
+      </div>
 
       <ArchitectureDiagram
         frontend={result.frontend}
@@ -34,89 +67,65 @@ export default function ArchitectureResults({
         database={result.database}
       />
 
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-        <h3 className="text-xl font-semibold text-white">
-          Project Overview
-        </h3>
+      <ResultSection
+        title="Project Overview"
+        content={result.project_overview}
+      />
 
-        <p className="mt-3 leading-7 text-gray-300">
-          {result.project_overview}
-        </p>
-      </section>
+      <div className="grid gap-6 md:grid-cols-2">
+        <ResultSection
+          title="Frontend"
+          content={result.frontend}
+        />
 
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-        <h3 className="text-xl font-semibold text-white">
-          Frontend
-        </h3>
+        <ResultSection
+          title="Backend"
+          content={result.backend}
+        />
 
-        <p className="mt-3 leading-7 text-gray-300">
-          {result.frontend}
-        </p>
-      </section>
+        <ResultSection
+          title="Database"
+          content={result.database}
+        />
 
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-        <h3 className="text-xl font-semibold text-white">
-          Backend
-        </h3>
+        <ResultSection
+          title="API Design"
+          content={result.api_design}
+        />
 
-        <p className="mt-3 leading-7 text-gray-300">
-          {result.backend}
-        </p>
-      </section>
+        <ResultSection
+          title="Authentication & Security"
+          content={result.authentication_security}
+        />
 
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-        <h3 className="text-xl font-semibold text-white">
-          Database
-        </h3>
-
-        <p className="mt-3 leading-7 text-gray-300">
-          {result.database}
-        </p>
-      </section>
-
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-        <h3 className="text-xl font-semibold text-white">
-          API Design
-        </h3>
-
-        <p className="mt-3 leading-7 text-gray-300">
-          {result.api_design}
-        </p>
-      </section>
-
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-        <h3 className="text-xl font-semibold text-white">
-          Authentication & Security
-        </h3>
-
-        <p className="mt-3 leading-7 text-gray-300">
-          {result.authentication_security}
-        </p>
-      </section>
-
-      <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
-        <h3 className="text-xl font-semibold text-white">
-          Deployment
-        </h3>
-
-        <p className="mt-3 leading-7 text-gray-300">
-          {result.deployment}
-        </p>
-      </section>
+        <ResultSection
+          title="Deployment"
+          content={result.deployment}
+        />
+      </div>
 
       <section className="rounded-xl border border-gray-800 bg-gray-900 p-6">
         <h3 className="text-xl font-semibold text-white">
           Implementation Plan
         </h3>
 
-        <ol className="mt-4 space-y-3 text-gray-300">
-          {result.implementation_plan.map((step, index) => (
-            <li key={index} className="flex gap-3">
-              <span className="font-semibold text-blue-400">
-                {index + 1}.
-              </span>
+        <p className="mt-2 text-sm text-gray-400">
+          Recommended order for building the system.
+        </p>
 
-              <span>{step}</span>
+        <ol className="mt-6 space-y-4">
+          {result.implementation_plan.map((step, index) => (
+            <li
+              key={index}
+              className="flex gap-4 rounded-lg border border-gray-800 bg-gray-950/50 p-4"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 font-semibold text-white">
+                {index + 1}
+              </div>
+
+              <p className="pt-1 leading-6 text-gray-300">
+                {step}
+              </p>
             </li>
           ))}
         </ol>
